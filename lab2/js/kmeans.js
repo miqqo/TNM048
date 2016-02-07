@@ -1,183 +1,140 @@
-    /**
-    * k means algorithm
-    * @param data
-    * @param k
-    * @return {Object}
-    */
-    var dataset, count = 0;
-   
-    function kmeans(data, k) {
-    	dataset = data;
+/**
+* k means algorithm
+* @param data
+* @param k
+* @return {Object}
+*/
+var centroids = [], keys = [];
 
-    	var dim = Object.keys(data[0]);
+function kmeans(data, k) {
+
+    var dim = Object.keys(data[0]);
+    console.log(dim);
+    //var dim = Object.keys(data[0]);
+    keys = d3.keys(data[0]);
+
+    var indexArr = new Array(data.length);
+
+    // calculate random values
+   for (var i = 0; i < k; i++) {
+       centroids.push(getRandomCentroid(dim, data));      
+   };
+
+
+
+    console.log(centroids)
+   // console.log(centroids2)
+
+    var centroidData = [];
+
+    var threshold = 0.1;
+    var minError = 0;
+    var newQualityChecker = 10000;
+    var counter = 0;
+
+   do{
+
+        centroidData = [];
+
+        for (var i = 0; i < k; i++)
+            centroidData.push([]);
         
-        //ta ut 2 random punkter ur datasetet
-        var centroids = [],
-        centroids = getCentroids(data,k);
+        //Which dot that represents which centroid
+        for (var i = 0; i < data.length; i++) {
+            indexArr[i] = calculateCentroidDistances(data[i], dim);
+            centroidData[indexArr[i]].push(data[i]);
+            // centroidData[indexArr[i]] = (data[i]);
+        };
         
-        //gå igenom alla punkter i datasetet och räkna ut avståndet till närmsta centerpunkt
-
-        //euclidian distance
+        //Make the new centroids
+        centroids = [];
+        for (var i = 0; i < k; i++) {
+            centroids[i] = calculateNewCentroid(centroidData[i]);
+        };
         
-        var meanList = [];
-        var prev_qual = [0, 0, 0, 0, 0, 0, 0];
-        var counter = 0;
-    
-        var meanValues = [];
+        //Calculate the quality value and look the diffrence beetween prev and current
+        var prevQuality = newQualityChecker;
+        newQualityChecker = qualityChecker(centroidData, dim);           
+        minError = newQualityChecker/prevQuality;
+        
+        counter++;
 
-        do{
-        	var list = ["-6"];
+    }while(minError > threshold)
 
-        	console.log("centroids: "  + centroids);
-        	 
-
-        	 for(var i = 1; i < data.length; i++){
-
-        	 	var centroidIndex = euclidianDistance(data[i], centroids, dim);
-        	 	list.push(centroidIndex);
-        	 	
-			}
-
-	        //beräkna medelvärdet för att sätta ut ny mittpunkt.
-			for(var j = 0; j < k; j++){
-				meanValues[j] = calculateMeanValue(j, list, dim);
-
-			}
-
-	        //för att beräkna kvalitén, gör en do/while loop som beräknar skillnaden mellan det
-	        //nuvarande och den tidigare kvalitén. Ska vara så nära 0 som möjligt. När det inte
-	        //sker någon förändring av värdet längre är det så bra kvalitét som möjligt och loopen 
-	        //kan stoppas.
-
-	        var qualityArray = [];
-
-	        for(var i = 0; i < centroids.length; i++){
-	        	 qualityArray[i] = currentQuality(i, dim, list, meanValues);
-	        	
-	        }
-
-	        //är kvalitén bättre?
-	        var resultingQuality = [];
-	        for(var i = 0; i < centroids.length; i++){
-	        	resultingQuality[i] = Math.abs(prev_qual[i] - qualityArray[i]);
-	        	prev_qual[i] = qualityArray[i];
-	        	centroids[i] = meanValues[i];
-
-	        }
-
-	        counter++;
-
-	   /*     var isDone0 = false, isDone1 = false;
-	        if(currentQuality_0 < 0.001) isDone0 = true;
-	        if(currentQuality_1 < 0.001) isDone1 = true;*/
-	               console.log("resulting quality" + resultingQuality);
+    // console.log("Iterations: " + counter);
+    // console.log(indexArr)
+    return indexArr;
+}
 
 
-    } while(counter < 10);
+function calculateNewCentroid(centroidData){
+    var a = 0, b = 0, c=0, d=0, e=0;
 
-
-
-         //returnera en array som innehåller 0 eller 1 beroende på vilken position
-         return list;
+    for (var i = 0; i < centroidData.length; i++) {
+        a =+ centroidData[i].A;
+        b =+ centroidData[i].B;
+        c =+centroidData[i].C;
+        d =+centroidData[i].D;
+        f =+centroidData[i].E;
     };
 
-    function getCentroids(data,size){
-		var centroids = [];
-    	for(var i = 0; i < size; i++){
-    		centroids.push(data[Math.floor(Math.random() * data.length)]);
+    a = a/centroidData.length;
+    b = b/centroidData.length;
+    c = c/centroidData.length;
+    d = d/centroidData.length;
+    e = e/centroidData.length;
+
+    return [a, b, c, d, e];
+}
+
+
+
+function calculateCentroidDistances(data, dim){
+    var distances = [], a = 0;
+    for (var i = 0; i < centroids.length; i++) {
+        a = 0;
+       /*  keys.forEach(function(p){
+            a += Math.pow((parseFloat(data[p]) - centroids[i][dim[]]), 2);
+
+         })*/
+
+        for(var j = 0; j < dim.length; j++){
+            a += Math.pow((parseFloat(data[dim[j]]) - centroids[i][j]), 2);
         }
-        return centroids;
+
+        distances.push(Math.sqrt(a));
+
+     }; 
+     var min = d3.min(distances);
+     var index = distances.indexOf(min);
+
+     return index;
+}
+
+function qualityChecker(centroidData, dim){
+
+    var sum = 0;
+    for(var i = 0; i < centroids.length; i++){
+        for (var j = 0; j < centroidData[i].length; j++) {
+            for(var k = 0; k < dim.length; k++){
+                sum += Math.pow((centroidData[i][j][k] - centroids[i][k]), 2);
+            }
+             /*sum += (Math.pow(centroidData[i][j].A - centroids[i][0], 2) +
+             Math.pow(centroidData[i][j].B - centroids[i][1], 2) +
+             Math.pow(centroidData[i][j].C - centroids[i][2], 2))*/
+        }
     }
-
-    function euclidianDistance(currentData, centroids, dim){
-    	var distances = [];
-    	var current = 0;
+    return Math.sqrt(sum);
+}
 
 
-    	for(var j = 0; j < centroids.length; j++){
-    		for(var i = 0; i < dim.length; i++){
-	    		current =+ Math.pow((currentData[dim[i]] - centroids[j][dim[i]]), 2);
-    		}
-    		distances.push(Math.sqrt(current));
-    	}
+function getRandomCentroid(dim, data){
+// function getRandomCentroid(dim, data){
+    var a = [];
+    var obj = data[Math.floor(Math.random() * data.length)];
 
-    	var min = d3.min(distances);
-    	var index = distances.indexOf(min);
-    	
-    	
-    	return index;
-    }
-
-    function calculateMeanValue(currentCentroid, list, dim){
-    	var a = 0, b = 0, c = 0, d = 0, e = 0;
-    	var counter = 0, check = 0;
-
-    	for(var i = 0; i < dataset.length; i++){
-    		if(list[i] == currentCentroid){
-    			a =+ parseFloat(dataset[i].A);
-    			b =+ parseFloat(dataset[i].B);
-    			c =+ parseFloat(dataset[i].C);
-    			if(dim.length > 3){
-    				d =+ parseFloat(dataset[i].D);
-    				e =+ parseFloat(dataset[i].E);
-    			}
-    		counter++;	
-    		}
-    		else check++;
-    	}
-
-    	//om den aldrig går in i första if-satsen(ej innehåller rätt index)
-    	if(check != 400 && dim.length < 3){
-    		a = a/counter;
-	    	b = b/counter;
-	    	c = c/counter;
-	    	d = d/counter;
-	    	e = e/counter;
-    	}
-    	else if(check != 5600 && dim.length > 2){
-    		a = a/counter;
-	    	b = b/counter;
-	    	c = c/counter;
-	    	d = d/counter;
-	    	e = e/counter;
-    	}
-    	else count++;
-    	
-    	var returnObject = {A:"", B:"", C:""};
-    	
-
-    	//console.log("me: " + dataset.length);
-    	if( dim.length > 3){
-    		returnObject.A = a.toString();
-			returnObject.B = b.toString();
-			returnObject.C = c.toString();
-			returnObject.D = d.toString();
-			returnObject.E = e.toString();
-    	} 
-		else{
-			returnObject.A = a.toString();
-			returnObject.B = b.toString();
-			returnObject.C = c.toString();
-
-		}
-		return returnObject;
-
-    }
-
-    function currentQuality(currentCentroid, dim, list, meanValues){
-    	var quality = 0;
-
-    	for(var j = 0; j <= list.length; j++){
-    		if(list[j] == currentCentroid){
-    			for(var i = 0; i < dim.length; i++){
-	    		quality =+ Math.pow((parseFloat(dataset[j][dim[i]]) - meanValues[currentCentroid][dim[i]]), 2);
-	    		//console.log("medel: " + meanValues[currentCentroid][i]);
-    			}
-    			quality = Math.sqrt(quality);
-    		}
-       	}
-    	
-    	return quality;
-    }
-    
-    
+    for (var i = 0; i < dim.length; i++) {
+        a.push(Number(obj[keys[i]]));
+    };
+    return a;
+}
