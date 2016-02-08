@@ -42,14 +42,14 @@ function kmeans(data, k) {
         //Which dot that represents which centroid
         for (var i = 0; i < data.length; i++) {
             indexArr[i] = calculateCentroidDistances(data[i], dim);
-            centroidData[indexArr[i]].push(data[i]);
+            centroidData[indexArr[i]].push(data[i], dim);
             // centroidData[indexArr[i]] = (data[i]);
         };
         
         //Make the new centroids
         centroids = [];
         for (var i = 0; i < k; i++) {
-            centroids[i] = calculateNewCentroid(centroidData[i]);
+            centroids[i] = calculateNewCentroid(centroidData[i],dim);
         };
         
         //Calculate the quality value and look the diffrence beetween prev and current
@@ -67,24 +67,20 @@ function kmeans(data, k) {
 }
 
 
-function calculateNewCentroid(centroidData){
-    var a = 0, b = 0, c=0, d=0, e=0;
+function calculateNewCentroid(centroidData, dim){
+    var array = [], resultingArray = [];
 
     for (var i = 0; i < centroidData.length; i++) {
-        a =+ centroidData[i].A;
-        b =+ centroidData[i].B;
-        c =+centroidData[i].C;
-        d =+centroidData[i].D;
-        f =+centroidData[i].E;
+        for(var j = 0; j < dim.length; j++){
+            array[j] += centroidData[i][dim[j]];
+        }
     };
 
-    a = a/centroidData.length;
-    b = b/centroidData.length;
-    c = c/centroidData.length;
-    d = d/centroidData.length;
-    e = e/centroidData.length;
+    for(var i = 0; i < dim.length; i++){
+        resultingArray[i] = array[i]/centroidData.length;
+    }
 
-    return [a, b, c, d, e];
+    return resultingArray;
 }
 
 
